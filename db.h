@@ -7,10 +7,13 @@
 #include <string.h>
 #include <sys/types.h>
 
+#include "table.h"
+
 typedef enum { STATEMENT_INSERT, STATEMENT_SELECT } StatementType;
 
 typedef struct {
   StatementType type;
+  Row insert_row;
 } Statement;
 
 typedef enum {
