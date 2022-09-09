@@ -21,3 +21,18 @@ void deserialize_row(void *src, Row *dest) {
  * email    | 255  | 36
  * total    | 291  | 
 */
+
+void *row_slot(Table *table, u_int32_t row_num) {
+  u_int32_t page_num = row_num / ROWS_PER_PAGE;
+
+  void *page = table->pages[page_num];
+  if (page == NULL) {
+    /* allocate memory only when try to access page */
+    page = table->pages[page_num] = malloc(PAGE_SIZE);
+  }
+  
+  u_int32_t row_offset = row_num % ROWS_PER_PAGE;
+  u_int32_t byte_offset = row_offset * ROW_SIZE;
+
+  return page + byte_offset;
+}

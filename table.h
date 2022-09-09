@@ -3,6 +3,7 @@
 
 #include <sys/types.h>
 #include <string.h>
+#include <stdlib.h>
 
 #define TABLE_MAX_PAGES 100
 #define COLUMN_USERNAME_SIZE 32
@@ -35,5 +36,6 @@ typedef struct {
 
 void serialize_row(Row *src, void *dest);
 void deserialize_row(void *src, Row *dest);
+void *row_slot(Table *table, u_int32_t row_num);
 
 #endif // !TABLE
