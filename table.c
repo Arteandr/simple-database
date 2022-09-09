@@ -50,7 +50,7 @@ void *row_slot(Table *table, u_int32_t row_num) {
 }
 
 void print_row(Row *row) {
-  printf("(%d, %s, %s)", row->id, row->username, row->email);
+  printf("(%d, %s, %s)\n", row->id, row->username, row->email);
 }
 
 Table *new_table() {
