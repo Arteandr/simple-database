@@ -53,12 +53,13 @@ void print_row(Row *row) {
   printf("(%d, %s, %s)\n", row->id, row->username, row->email);
 }
 
-Table *new_table() {
-  Table *table = (Table *)malloc(sizeof(Table));
-  table->num_rows = 0;
-  for (u_int32_t i = 0; i < TABLE_MAX_PAGES; i++) {
-    table->pages[i] = NULL;
-  }
+Table *db_open(const char *filename) {
+  Pager *pager = pager_open(filename);
+  u_int32_t num_rows = pager->file_length / ROW_SIZE;
+
+  Table *table = malloc(sizeof(Table));
+  table->pager = pager;
+  table->num_rows = num_rows;
 
   return table;
 }

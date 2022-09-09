@@ -1,12 +1,12 @@
 #ifndef _TABLE
 #define _TABLE
 
+#include "pager.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/types.h>
 
-#define TABLE_MAX_PAGES 100
 #define COLUMN_USERNAME_SIZE 32
 #define COLUMN_EMAIL_SIZE 255
 #define size_of_attribute(Struct, Attribute) sizeof(((Struct *)0)->Attribute)
@@ -21,10 +21,10 @@ void print_row(Row *row);
 
 typedef struct {
   u_int32_t num_rows;
-  void *pages[TABLE_MAX_PAGES];
+  Pager *pager;
 } Table;
 
-Table *new_table();
+Table *db_open(const char *filename);
 void free_table(Table *table);
 
 void serialize_row(Row *src, void *dest);
