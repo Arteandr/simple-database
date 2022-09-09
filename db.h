@@ -11,6 +11,8 @@
 
 typedef enum { STATEMENT_INSERT, STATEMENT_SELECT } StatementType;
 
+typedef enum { EXECUTE_SUCCESS, EXECUTE_TABLE_FULL } ExecuteResult;
+
 typedef struct {
   StatementType type;
   Row insert_row;
@@ -35,6 +37,6 @@ typedef enum {
 } PrepareResult;
 
 PrepareResult prepare_statement(InputBuffer *input, Statement *statement);
-void execute_statement(Statement *statement);
+ExecuteResult execute_statement(Statement *statement, Table *table);
 
 #endif // !DB

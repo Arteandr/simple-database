@@ -1,2 +1,2 @@
 run:
-	gcc -o db.o db.c
+	gcc -Wall -o build/db db.c table.c
