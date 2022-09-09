@@ -11,3 +11,13 @@ void deserialize_row(void *src, Row *dest) {
   memcpy(&(dest->username), src + USERNAME_OFFSET, USERNAME_SIZE);
   memcpy(&(dest->email), src + EMAIL_OFFSET, EMAIL_SIZE);
 }
+
+
+/* Representation of serealized row:
+ *
+ * column   | size | offset
+ * id       | 4    | 0
+ * username | 32   | 4
+ * email    | 255  | 36
+ * total    | 291  | 
+*/
