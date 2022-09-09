@@ -30,7 +30,9 @@ void close_input_buffer(InputBuffer *input);
 
 typedef enum {
   PREPARE_SUCCESS,
+  PREPARE_NEGATIVE_ID,
   PREPARE_UNRECOGNIZED_COMMAND,
+  PREPARE_STRING_TOO_LONG,
   PREPARE_SYNTAX_ERROR
 } PrepareResult;
 

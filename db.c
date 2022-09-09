@@ -1,4 +1,3 @@
-#include "table.h"
 #include "db.h"
 
 InputBuffer *new_input_buffer() {
@@ -19,19 +18,38 @@ CommandResult do_command(InputBuffer *input, Table *table) {
     return COMMAND_UNRECOGNIZED_COMMAND;
   }
 }
+
+PrepareResult prepare_insert(InputBuffer *input, Statement *statement) {
+  statement->type = STATEMENT_INSERT;
+
+  char *keyword = strtok(input->buffer, " ");
+  char *id_string = strtok(NULL, " ");
+  char *username = strtok(NULL, " ");
+  char *email = strtok(NULL, " ");
+
+  if (id_string == NULL || username == NULL || email == NULL)
+    return PREPARE_SYNTAX_ERROR;
+
+  int id = atoi(id_string);
+  if (id <= 0)
+    return PREPARE_NEGATIVE_ID;
+
+  if (strlen(username) > COLUMN_USERNAME_SIZE)
+    return PREPARE_STRING_TOO_LONG;
+
+  if (strlen(email) > COLUMN_EMAIL_SIZE)
+    return PREPARE_STRING_TOO_LONG;
+
+  statement->insert_row.id = id;
+  strcpy(statement->insert_row.username, username);
+  strcpy(statement->insert_row.email, email);
+
+  return PREPARE_SUCCESS;
+}
+
 PrepareResult prepare_statement(InputBuffer *input, Statement *statement) {
-  if (strncmp(input->buffer, "insert", 6) == 0) {
-    statement->type = STATEMENT_INSERT;
-
-    int args_assigned =
-        sscanf(input->buffer, "insert %d %s %s", &(statement->insert_row.id),
-               statement->insert_row.username, statement->insert_row.email);
-    if (args_assigned < 3) {
-      return PREPARE_SYNTAX_ERROR;
-    }
-
-    return PREPARE_SUCCESS;
-  }
+  if (strncmp(input->buffer, "insert", 6) == 0)
+    return prepare_insert(input, statement);
 
   if (strcmp(input->buffer, "select") == 0) {
     statement->type = STATEMENT_SELECT;
@@ -57,6 +75,12 @@ ExecuteResult execute_insert(Statement *statement, Table *table) {
 
 ExecuteResult execute_select(Statement *statement, Table *table) {
   Row row;
+
+  if (table->num_rows <= 0) {
+    printf("Table is empty.\n");
+    return EXECUTE_SUCCESS;
+  }
+
   for (u_int32_t i = 0; i < table->num_rows; i++) {
     deserialize_row(row_slot(table, i), &row);
     print_row(&row);
@@ -119,6 +143,12 @@ int main(int argc, char *argv[]) {
     switch (prepare_statement(input, &statement)) {
     case (PREPARE_SUCCESS):
       break;
+    case (PREPARE_NEGATIVE_ID):
+      printf("ID must be positive.\n");
+      continue;
+    case (PREPARE_STRING_TOO_LONG):
+      printf("String is too long.\n");
+      continue;
     case (PREPARE_SYNTAX_ERROR):
       printf("Syntax error. Could not parse statement.\n");
       continue;
@@ -127,13 +157,13 @@ int main(int argc, char *argv[]) {
       continue;
     }
 
-    switch(execute_statement(&statement, table)) {
-      case (EXECUTE_SUCCESS):
-        printf("Done.\n");
-        break;
-      case (EXECUTE_TABLE_FULL):
-        printf("Error: table full.\n");
-        break;
+    switch (execute_statement(&statement, table)) {
+    case (EXECUTE_SUCCESS):
+      printf("Done.\n");
+      break;
+    case (EXECUTE_TABLE_FULL):
+      printf("Error: table full.\n");
+      break;
     }
   }
 }
