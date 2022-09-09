@@ -1,5 +1,4 @@
 #include "db.h"
-#include <string.h>
 
 InputBuffer *new_input_buffer() {
   InputBuffer *input_buffer = (InputBuffer*)malloc(sizeof(InputBuffer));
