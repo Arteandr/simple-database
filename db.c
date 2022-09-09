@@ -1,3 +1,4 @@
+#include "table.h"
 #include "db.h"
 
 InputBuffer *new_input_buffer() {
@@ -9,16 +10,26 @@ InputBuffer *new_input_buffer() {
   return input_buffer;
 }
 
-CommandResult do_command(InputBuffer *input) {
+CommandResult do_command(InputBuffer *input, Table *table) {
   if (strcmp(input->buffer, ".exit") == 0) {
+    close_input_buffer(input);
+    free_table(table);
     exit(EXIT_SUCCESS);
   } else {
     return COMMAND_UNRECOGNIZED_COMMAND;
   }
 }
 PrepareResult prepare_statement(InputBuffer *input, Statement *statement) {
-  if (strcmp(input->buffer, "insert") == 0) {
+  if (strncmp(input->buffer, "insert", 6) == 0) {
     statement->type = STATEMENT_INSERT;
+
+    int args_assigned =
+        sscanf(input->buffer, "insert %d %s %s", &(statement->insert_row.id),
+               statement->insert_row.username, statement->insert_row.email);
+    if (args_assigned < 3) {
+      return PREPARE_SYNTAX_ERROR;
+    }
+
     return PREPARE_SUCCESS;
   }
 
@@ -29,6 +40,8 @@ PrepareResult prepare_statement(InputBuffer *input, Statement *statement) {
 
   return PREPARE_UNRECOGNIZED_COMMAND;
 }
+
+extern u_int32_t TABLE_MAX_ROWS;
 
 ExecuteResult execute_insert(Statement *statement, Table *table) {
   if (table->num_rows >= TABLE_MAX_ROWS)
@@ -59,6 +72,8 @@ ExecuteResult execute_statement(Statement *statement, Table *table) {
   case (STATEMENT_SELECT):
     return execute_select(statement, table);
   }
+
+  return EXECUTE_SUCCESS;
 }
 
 void close_input_buffer(InputBuffer *input) {
@@ -83,6 +98,7 @@ void read_input(InputBuffer *input) {
 }
 
 int main(int argc, char *argv[]) {
+  Table *table = new_table();
   InputBuffer *input = new_input_buffer();
 
   while (1) {
@@ -90,7 +106,7 @@ int main(int argc, char *argv[]) {
     read_input(input);
 
     if (input->buffer[0] == '.') {
-      switch (do_command(input)) {
+      switch (do_command(input, table)) {
       case (COMMAND_SUCCESS):
         continue;
       case (COMMAND_UNRECOGNIZED_COMMAND):
@@ -103,12 +119,21 @@ int main(int argc, char *argv[]) {
     switch (prepare_statement(input, &statement)) {
     case (PREPARE_SUCCESS):
       break;
+    case (PREPARE_SYNTAX_ERROR):
+      printf("Syntax error. Could not parse statement.\n");
+      continue;
     case (PREPARE_UNRECOGNIZED_COMMAND):
       printf("Unrecognized keyword at start of '%s'.\n", input->buffer);
       continue;
     }
 
-    execute_statement(&statement);
-    printf("Executed.\n");
+    switch(execute_statement(&statement, table)) {
+      case (EXECUTE_SUCCESS):
+        printf("Done.\n");
+        break;
+      case (EXECUTE_TABLE_FULL):
+        printf("Error: table full.\n");
+        break;
+    }
   }
 }
