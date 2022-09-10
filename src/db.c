@@ -13,6 +13,9 @@ CommandResult do_command(InputBuffer *input, Table *table) {
   if (strcmp(input->buffer, ".exit") == 0) {
     db_close(table);
     exit(EXIT_SUCCESS);
+  } else if (strcmp(input->buffer, ".clear") == 0) {
+    system("clear");
+    return COMMAND_SUCCESS;
   } else {
     return COMMAND_UNRECOGNIZED_COMMAND;
   }
