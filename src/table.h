@@ -25,7 +25,7 @@ typedef struct {
 } Table;
 
 Table *db_open(const char *filename);
-void free_table(Table *table);
+void db_close(Table *table);
 
 void serialize_row(Row *src, void *dest);
 void deserialize_row(void *src, Row *dest);
