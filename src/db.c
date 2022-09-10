@@ -83,8 +83,8 @@ ExecuteResult execute_select(Statement *statement, Table *table) {
     printf("Table is empty.\n");
     return EXECUTE_SUCCESS;
   }
-  
-  while(!(cursor->end_of_table)) {
+
+  while (!(cursor->end_of_table)) {
     deserialize_row(cursor_value(cursor), &row);
     print_row(&row);
     cursor_advance(cursor);
