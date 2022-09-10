@@ -29,6 +29,5 @@ void db_close(Table *table);
 
 void serialize_row(Row *src, void *dest);
 void deserialize_row(void *src, Row *dest);
-void *row_slot(Table *table, u_int32_t row_num);
 
 #endif //_TABLE

@@ -32,16 +32,16 @@ void deserialize_row(void *src, Row *dest) {
  * total    | 291  |
  */
 
-void *row_slot(Table *table, u_int32_t row_num) {
-  u_int32_t page_num = row_num / ROWS_PER_PAGE;
-  
-  void *page = get_page(table->pager, page_num);
-
-  u_int32_t row_offset = row_num % ROWS_PER_PAGE;
-  u_int32_t byte_offset = row_offset * ROW_SIZE;
-
-  return page + byte_offset;
-}
+// void *row_slot(Table *table, u_int32_t row_num) {
+//   u_int32_t page_num = row_num / ROWS_PER_PAGE;
+//   
+//   void *page = get_page(table->pager, page_num);
+//
+//   u_int32_t row_offset = row_num % ROWS_PER_PAGE;
+//   u_int32_t byte_offset = row_offset * ROW_SIZE;
+//
+//   return page + byte_offset;
+// }
 
 void print_row(Row *row) {
   printf("(%d, %s, %s)\n", row->id, row->username, row->email);
@@ -57,6 +57,7 @@ Table *db_open(const char *filename) {
 
   return table;
 }
+
 
 void db_close(Table *table) {
   Pager *pager = table->pager;
