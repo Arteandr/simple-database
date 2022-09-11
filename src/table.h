@@ -1,6 +1,7 @@
 #ifndef _TABLE
 #define _TABLE
 
+#include "b_tree.h"
 #include "pager.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -20,8 +21,8 @@ typedef struct {
 void print_row(Row *row);
 
 typedef struct {
-  u_int32_t num_rows;
   Pager *pager;
+  u_int32_t root_page_num;
 } Table;
 
 Table *db_open(const char *filename);

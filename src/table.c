@@ -8,9 +8,6 @@ const u_int32_t USERNAME_OFFSET = ID_OFFSET + ID_SIZE;
 const u_int32_t EMAIL_OFFSET = USERNAME_OFFSET + USERNAME_SIZE;
 const u_int32_t ROW_SIZE = ID_SIZE + USERNAME_SIZE + EMAIL_OFFSET;
 
-const u_int32_t ROWS_PER_PAGE = PAGE_SIZE / ROW_SIZE;
-const u_int32_t TABLE_MAX_ROWS = ROWS_PER_PAGE * TABLE_MAX_PAGES;
-
 /* TODO: remove */
 /* common node header */
 const u_int32_t NODE_TYPE_SIZE = sizeof(u_int8_t);
@@ -67,36 +64,29 @@ void print_row(Row *row) {
 
 Table *db_open(const char *filename) {
   Pager *pager = pager_open(filename);
-  u_int32_t num_rows = pager->file_length / ROW_SIZE;
 
   Table *table = malloc(sizeof(Table));
   table->pager = pager;
-  table->num_rows = num_rows;
+  table->root_page_num = 0;
+
+  if (pager->num_pages == 0) {
+    void *root_node = get_page(pager, 0);
+    initialize_leaf_node(root_node);
+  }
 
   return table;
 }
 
 void db_close(Table *table) {
   Pager *pager = table->pager;
-  u_int32_t num_full_pages = table->num_rows / ROWS_PER_PAGE;
 
-  for (u_int32_t i = 0; i < num_full_pages; i++) {
+  for (u_int32_t i = 0; i < pager->num_pages; i++) {
     if (pager->pages[i] == NULL)
       continue;
 
-    pager_flush(pager, i, PAGE_SIZE);
+    pager_flush(pager, i);
     free(pager->pages[i]);
     pager->pages[i] = NULL;
-  }
-
-  u_int32_t num_addit_rows = table->num_rows % ROWS_PER_PAGE;
-  if (num_addit_rows > 0) {
-    u_int32_t page_num = num_full_pages;
-    if (pager->pages[page_num] != NULL) {
-      pager_flush(pager, page_num, num_addit_rows * ROW_SIZE);
-      free(pager->pages[page_num]);
-      pager->pages[page_num] = NULL;
-    }
   }
 
   int result = close(pager->file_descriptor);
