@@ -1,8 +1,8 @@
 #ifndef _DB
 #define _DB
 
-#include "table.h"
 #include "cursor.h"
+#include "table.h"
 #include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>

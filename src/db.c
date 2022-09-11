@@ -16,6 +16,10 @@ CommandResult do_command(InputBuffer *input, Table *table) {
   } else if (strcmp(input->buffer, ".clear") == 0) {
     system("clear");
     return COMMAND_SUCCESS;
+  } else if (strcmp(input->buffer, ".btree") == 0) {
+    printf("Tree:\n");
+    print_leaf_node(get_page(table->pager, 0));
+    return COMMAND_SUCCESS;
   } else {
     return COMMAND_UNRECOGNIZED_COMMAND;
   }
@@ -64,14 +68,14 @@ PrepareResult prepare_statement(InputBuffer *input, Statement *statement) {
 extern u_int32_t TABLE_MAX_ROWS;
 
 ExecuteResult execute_insert(Statement *statement, Table *table) {
-  if (table->num_rows >= TABLE_MAX_ROWS)
+  void *node = get_page(table->pager, table->root_page_num);
+  if ((*leaf_node_num_cells(node) >= LEAF_NODE_MAX_CELLS))
     return EXECUTE_TABLE_FULL;
 
   Row *row = &(statement->insert_row);
   Cursor *cursor = table_end(table);
 
-  serialize_row(row, cursor_value(cursor));
-  table->num_rows += 1;
+  leaf_node_insert(cursor, row->id, row);
 
   free(cursor);
 
@@ -82,7 +86,7 @@ ExecuteResult execute_select(Statement *statement, Table *table) {
   Row row;
   Cursor *cursor = table_start(table);
 
-  if (table->num_rows <= 0) {
+  if (cursor->table->pager->num_pages <= 0) {
     printf("Table is empty.\n");
     return EXECUTE_SUCCESS;
   }
